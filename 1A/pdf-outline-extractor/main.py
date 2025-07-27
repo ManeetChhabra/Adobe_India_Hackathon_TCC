@@ -2,7 +2,7 @@ print("🚀 Script started")
 
 import os
 import json
-from utils.extractor import extract_outline
+from enhanced_visual_extractor import EnhancedVisualExtractor
 
 INPUT_DIR = "input"
 OUTPUT_DIR = "output"
@@ -11,17 +11,29 @@ def process_all_pdfs():
     print("🛠 Scanning input directory...")
     input_files = os.listdir(INPUT_DIR)
     print(f"Files in {INPUT_DIR}: {input_files}")
+    
+    extractor = EnhancedVisualExtractor()
 
     for filename in input_files:
         if filename.endswith(".pdf"):
             try:
                 pdf_path = os.path.join(INPUT_DIR, filename)
                 print(f"📄 Processing: {pdf_path}")
-
-                title, outline = extract_outline(pdf_path)
+                
+                # Use enhanced extractor
+                result = extractor.extract_headings_enhanced(pdf_path)
+                
+                # Format for expected output structure
+                outline = []
+                for heading in result.get("headings", []):
+                    outline.append({
+                        "level": heading["level"],
+                        "text": heading["text"],
+                        "page": heading["page"]  # Keep 0-based indexing
+                    })
 
                 wrapped_output = {
-                    "title": title,
+                    "title": result.get("title", "Document"),
                     "outline": outline
                 }
 
