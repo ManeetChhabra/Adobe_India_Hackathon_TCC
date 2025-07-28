@@ -142,7 +142,9 @@ def create_labeled_dataset(pdf_files, pdf_dir, json_dir):
             continue
             
         # Extract features from PDF
-        features = extract_features(pdf_path)
+        doc = fitz.open(pdf_path)
+        features = extract_features(doc)
+        doc.close()
         
         # Load ground truth labels
         with open(json_path, 'r', encoding='utf-8') as f:

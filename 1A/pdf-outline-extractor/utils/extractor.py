@@ -2,7 +2,7 @@
 
 import fitz
 import re
-from utils.ocr_utils import extract_text_with_ocr
+
 from feature_engineering import extract_features
 
 # --- Load ML model with graceful fallback ---

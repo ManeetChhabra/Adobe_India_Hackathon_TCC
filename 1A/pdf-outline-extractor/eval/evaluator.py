@@ -6,7 +6,7 @@ from difflib import SequenceMatcher
 from time import time
 
 GROUND_TRUTH_DIR = "ground_truth"
-PREDICTIONS_DIR = "output_final"
+PREDICTIONS_DIR = "output"
 
 def normalize_heading(h):
     # Handle both string ("H1", "H2") and integer (1, 2) level formats
