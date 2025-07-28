@@ -1,10 +1,11 @@
 import os
 import json
+import sys
 from difflib import SequenceMatcher
 from time import time
 
 GROUND_TRUTH_DIR = "ground_truth"
-PREDICTIONS_DIR = "output"
+PREDICTIONS_DIR = "output_final"
 
 def normalize_heading(h):
     return (
@@ -22,6 +23,14 @@ def evaluate_file(gt_path, pred_path):
 
         gt_set = set(normalize_heading(h) for h in gt_data.get("outline", []))
         pred_set = set(normalize_heading(h) for h in pred_data.get("outline", []))
+
+        # Debug output for first few files
+        filename = os.path.basename(gt_path)
+        if filename in ["file02.json", "file03.json"]:
+            print(f"\n🔍 DEBUG for {filename}:")
+            print(f"Ground Truth ({len(gt_set)}): {list(gt_set)[:3]}")
+            print(f"Predictions ({len(pred_set)}): {list(pred_set)[:3]}")
+            print(f"Matches: {gt_set & pred_set}")
 
         true_positives = len(gt_set & pred_set)
         precision = true_positives / len(pred_set) if pred_set else 0
