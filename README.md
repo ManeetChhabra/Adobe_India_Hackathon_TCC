@@ -10,9 +10,14 @@ A hybrid ML + Visual PDF outline extraction system with multilingual support for
 - **Form Field Detection**: Automatically filters out form fields and irrelevant content
 - **Clean JSON Output**: Standardized schema with title and hierarchical outline structure
 
+### Navigate to:
+```bash
+cd 1A/pdf-outline-extractor
+```
 ## Docker Requirements & Execution
 
 ### Build Command
+
 ```bash
 docker build --platform linux/amd64 -t pdf-extractor:latest .
 ```
