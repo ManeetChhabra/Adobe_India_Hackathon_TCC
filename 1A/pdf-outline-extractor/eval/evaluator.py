@@ -1,5 +1,6 @@
 import os
 import json
+import argparse
 from difflib import SequenceMatcher
 from time import time
 
@@ -7,8 +8,15 @@ GROUND_TRUTH_DIR = "ground_truth"
 PREDICTIONS_DIR = "output"
 
 def normalize_heading(h):
+    # Handle both string ("H1", "H2") and integer (1, 2) level formats
+    level = h["level"]
+    if isinstance(level, int):
+        level = f"H{level}"
+    elif isinstance(level, str):
+        level = level.strip().upper()
+    
     return (
-        h["level"].strip().upper(),
+        level,
         h["text"].strip().lower(),
         h["page"]
     )
@@ -20,8 +28,12 @@ def evaluate_file(gt_path, pred_path):
         with open(pred_path, "r", encoding="utf-8") as f:
             pred_data = json.load(f)
 
-        gt_set = set(normalize_heading(h) for h in gt_data.get("outline", []))
-        pred_set = set(normalize_heading(h) for h in pred_data.get("outline", []))
+        # Handle both 'outline' (ML) and 'headings' (clustering) keys
+        gt_headings = gt_data.get("outline", [])
+        pred_headings = pred_data.get("outline", pred_data.get("headings", []))
+
+        gt_set = set(normalize_heading(h) for h in gt_headings)
+        pred_set = set(normalize_heading(h) for h in pred_headings)
 
         true_positives = len(gt_set & pred_set)
         precision = true_positives / len(pred_set) if pred_set else 0
@@ -33,13 +45,33 @@ def evaluate_file(gt_path, pred_path):
         return 0, 0
 
 def main():
+    parser = argparse.ArgumentParser(description='Evaluate PDF outline extraction')
+    parser.add_argument('--predicted_folder', default=PREDICTIONS_DIR, 
+                       help='Folder containing predicted outline JSON files')
+    parser.add_argument('--ground_truth_folder', default=GROUND_TRUTH_DIR,
+                       help='Folder containing ground truth JSON files')
+    parser.add_argument('--output_dir', default=None,
+                       help='Specific output directory to evaluate (e.g., output_hybrid)')
+    args = parser.parse_args()
+    
+    # Use output_dir if specified, otherwise use predicted_folder
+    if args.output_dir:
+        predictions_dir = args.output_dir
+    else:
+        predictions_dir = args.predicted_folder
+    ground_truth_dir = args.ground_truth_folder
+    
+    print(f"📊 Evaluating predictions from: {predictions_dir}")
+    print(f"📊 Against ground truth in: {ground_truth_dir}")
+    print("=" * 50)
+    
     start_time = time()
     precisions, recalls = [], []
 
-    for filename in os.listdir(GROUND_TRUTH_DIR):
+    for filename in os.listdir(ground_truth_dir):
         if filename.endswith(".json"):
-            gt_path = os.path.join(GROUND_TRUTH_DIR, filename)
-            pred_path = os.path.join(PREDICTIONS_DIR, filename)
+            gt_path = os.path.join(ground_truth_dir, filename)
+            pred_path = os.path.join(predictions_dir, filename)
 
             if os.path.exists(pred_path):
                 p, r = evaluate_file(gt_path, pred_path)
